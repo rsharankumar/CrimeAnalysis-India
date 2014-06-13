@@ -1,0 +1,50 @@
+
+#Reading the dataset
+india <- read.csv("C:/Users/Flutura Business/Desktop/India Data/India-data-1980withAdditionalData.csv", header=T)
+
+#Converting to a dataframe
+india<-as.data.frame(india)
+
+#replacing empty cell with NA
+india<-india[, !apply(is.na(india), 2, all)]
+
+#create Interim dataset
+write.csv(india, file = "C:/Users/Flutura Business/Desktop/India Data/working/Int-data1980.csv")
+ncol(india)
+
+#head(india)
+
+# counting the NAs per column 
+colSums(is.na(india)) 
+
+# keeping only the ones without NAs 
+india<-india[,colSums(is.na(india)) == 0] 
+
+
+#Replacing NA with mean
+india <-sapply(seq_len(ncol(india)),function(i) {india[,i][is.na(india[,i])]<-mean(india[,i],na.rm=TRUE);india[,i]}) 
+
+
+
+write.csv(india, file = "C:/Users/Flutura Business/Desktop/India Data/working/Rdata1980.csv")
+
+#correlation output
+write.csv(cor(india), file = "C:/Users/Flutura Business/Desktop/India Data/working/cor1980withoutNA.csv")
+
+#Correlated features
+corData <- read.csv("C:/Users/Flutura Business/Desktop/India Data/working/shortlistedData.csv", header=T)
+names(corData)
+
+#Incidence Data
+incidenceForecast <- data.frame(corData$Year, corData$Incidence)
+
+#Forecasting Incidence Data
+ts=ts(incidenceForecast)
+h_model=HoltWinters(ts,gamma=FALSE)
+require("forecast")#Loading Forecast Package
+#install.packages("forecast")
+hforecast=forecast.HoltWinters(h_model,h=10)
+predscore <- hforecast$mean
+?forecast
+
+
